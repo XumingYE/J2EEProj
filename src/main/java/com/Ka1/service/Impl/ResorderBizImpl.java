@@ -41,7 +41,7 @@ public class ResorderBizImpl implements ResorderBiz {
 				   ri.setDealprice(   entry.getValue().getFood().getRealprice()   );
 				   resorderitemDao.insertResorderitem( ri );
 				  
-				   throw new RuntimeException("添加订单详情出问题了，网络抖动...");
+				   //throw new RuntimeException("添加订单详情出问题了，网络抖动...");
 				   
 			   }
 		   }

@@ -1,5 +1,7 @@
 import java.sql.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -14,7 +16,11 @@ import com.Ka1.dao.ResfoodDao;
 import com.Ka1.dao.ResorderDao;
 import com.Ka1.dao.ResorderitemDao;
 import com.Ka1.dao.ResuserDao;
+import com.Ka1.service.ResfoodBiz;
+import com.Ka1.service.ResorderBiz;
+import com.Ka1.service.ResuserBiz;
 import com.Ka1.util.Encrypt;
+import com.Ka1.web.entity.CartItem;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +51,66 @@ public class AppTest extends TestCase {
 
 	@Autowired
 	private ResorderitemDao resorderitemDao;
+
+	@Autowired
+	private ResuserBiz resuserBiz;
+	@Autowired
+	private ResfoodBiz resfoodBiz;
+	@Autowired
+	private ResorderBiz resorderBiz;
+
+	@Test
+	public void testResorderBiz() {
+		Resorder o=new Resorder();
+		o.setAddress("湖南");
+		o.setPs("快快...");
+		o.setTel("13898989898");
+		o.setUserid(1);
+
+		int resfoodid=2;
+
+		Map<Integer, CartItem> shopCart=new HashMap<Integer, CartItem>();
+		Resfood r=new Resfood();
+		r.setFid(    resfoodid  );
+		r.setRealprice(100.0);
+
+		CartItem ci=new CartItem();
+		ci.setNum(2);
+		ci.setFood(r);
+		shopCart.put(    resfoodid, ci);
+
+		r=new Resfood();
+		r.setFid(  3    );
+		r.setRealprice(200.0);
+		CartItem ci2=new CartItem();
+		ci2.setNum(1);
+		ci2.setFood(r);
+
+		shopCart.put( 3,  ci2   );
+
+		resorderBiz.completeOrder(o, shopCart);
+
+	}
+
+	@Test
+	public void testResfoodrBiz() {
+		List<Resfood> list=resfoodBiz.findAll();
+		assertEquals(list.size(), 12);
+		for (Resfood rf : list) {
+			System.out.println(rf.getFname());
+		}
+	}
+
+	@Test
+	public void testResuserBiz() {
+		Resuser u = new Resuser();
+		u.setUsername("a");
+		u.setPwd(   "a"  );
+		Resuser result=resuserBiz.login(   u );
+		assertNotNull(   result );
+	}
+
+
 
 	@Test
 	public void testDataSource() {
