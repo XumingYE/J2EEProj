@@ -1,0 +1,17 @@
+server:
+  port: 8080
+  servlet:
+    session.timeout: 60000
+    contextpath: /res
+
+logging:
+  level.root: info
+  level.org.springframework: info
+  level.com.yc: info
+  file: /tmp/Ka1.log
+
+
+
+
+
+
