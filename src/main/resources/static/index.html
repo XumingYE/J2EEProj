@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>小萌神订餐网</title>
+	<!-- 图标 -->
+	<link rel="short icon" href="image/eat0.ico" />
+	<link rel="stylesheet" href="css/index.css" />
+</head>
+<body>
+
+<div id="app">
+
+	<div class="head">
+		小萌神订餐网
+		<div class="right">
+			<span class="showlogin" id="showlogin" v-if="loginbtnflag" @click="showLogin(true)">登录</span>
+			<span id="exitspan" v-if="userflag">{{username}}
+				     <span @click="logout()">退出</span>
+				</span>
+		</div>
+	</div>
+	<div class="content">
+
+		<ul class="allfoods" id="allfoods">
+
+
+			<li v-for="food in foods">
+				<h3 @click="showfood(food.fid)">{{food.fname}}</h3>
+				<div :id=`fid${food.fid}` class="fooddesc" v-show="food.status">
+					<img :src=`image/${food.fphoto}` class="foodimg" />
+					<article class="foodprice">
+						<p>菜品描述：{{food.detail}}</p>
+						<p class="normalprice">原价：￥{{food.normprice}}</p>
+						<p class="realprice">特价：￥{{food.realprice}}</p>
+						<p class="buybtn" @click="addCart(  food.fid, 1 )">加入购物车</p>
+					</article>
+				</div>
+			</li>
+
+
+
+
+
+
+		</ul>
+	</div>
+	<!--  <div class="look">浏览记录</div> -->
+	<div class="shoppingcar">
+		<div class="carbag" id="carbag">
+			<p>
+				购物车<span id="del">[清空]</span>
+			</p>
+			<table id="bagcontent" cellpadding="0" cellspacing="0">
+
+			</table>
+		</div>
+		<div class="carprice">￥0</div>
+		<div class="carinfo">购物车是空的</div>
+	</div>
+	<div class="footer">
+		Copyright © 2016 Xiaomengsheng Incorporated Company. All rights reserved. <br /> 订餐，就上小萌神订餐网!
+	</div>
+
+	<div class="login" id="login" v-if="loginflag">
+		<span id="unshow" @click="showLogin(false)">X</span>
+		<form name="myform">
+			<table>
+				<tr>
+					<td class="labname"><label for="username">用户名：</label></td>
+					<td><input type="text" name="username" placeholder="请输入用户名" id="username" v-model="username" /></td>
+				</tr>
+				<tr>
+					<td class="labname"><label for="pwd">密码：</label></td>
+					<td><input type="password" name="pwd" placeholder="请输入密码" id="pwd" v-model="pwd" /></td>
+				</tr>
+				<tr>
+					<td class="labname"><label for="yzm">验证码：</label></td>
+					<td><input type="text" name="yzm" placeholder="请输入验证码" id="yzm" v-model="valcode" /></td>
+					<td><img src="verifyCodeServlet" id="yzm_img" /></td>
+				</tr>
+			</table>
+		</form>
+		<input type="button" value="login" class="btn" id="btn" @click="login" />
+	</div>
+
+	<!-- 订单信息 -->
+	<div class="login" id="myinfo" v-if="orderflag">
+		<span id="unshowinfo">X</span>
+		<form name="forminfo">
+			<table>
+				<tr>
+					<td class="labname"><label for="address">送货地址:</label></td>
+					<td><input name="address" type="text" placeholder="请输入送货地址" id="address" /></td>
+				</tr>
+				<tr>
+					<td class="labname"><label for="tel">联系电话:</label></td>
+					<td><input type="text" id="tel" placeholder="请输入联系电话" name="tel" /></td>
+				</tr>
+				<tr>
+					<td class="labname"><label for="deliverytime">送货时间:</label></td>
+					<td><input type="text" name="deliverytime" id="deliverytime" placeholder="请输入送货时间（默认马上发货）" /></td>
+				</tr>
+				<tr>
+					<td class="labname"><label for="ps">附言:</label></td>
+					<td><input type="text" id="ps" placeholder="请输入附言" name="ps" /></td>
+				</tr>
+			</table>
+		</form>
+		<input type="button" value="提交" class="btn" id="submit">
+	</div>
+
+</div>
+
+<!--  在网页里面引入javascript    jquery:DOM   大家注意顺序  -->
+<script src="js/jquery-1.9.1.js"></script>
+<script src="js/vue.js"></script>
+<script src="js/axios.js"></script>
+<script type="text/javascript">
+	//   vm:  view-model
+	let vm=new Vue({
+		el:"#app",
+		data:{
+			orderflag:false,     //送货地址div
+			loginflag:false,
+			loginbtnflag:true,   //登录按钮
+			userflag:false,     //用户信息及退出的span
+			username:'',   //如果登录了，则它为用户名
+			pwd:'',
+			valcode:'',
+			foods:{}
+		},
+		methods:{
+			logout:function(){
+				axios.post("logout").then( yc=>{
+					if( yc.data.code==1){
+						this.userflag=false;
+						this.loginbtnflag=true;
+						this.username='';
+					}
+				})
+			},
+			login:function(){
+				//当是post发送时，参数需要包装
+				var params=new URLSearchParams();
+				params.append("username",this.username);
+				params.append("pwd",this.pwd);
+				params.append("valcode",this.valcode);
+				axios.post("login",params).then(   yc=>{
+					if(  yc.data.code==0){
+						alert( yc.data.msg);
+					}else{
+						this.loginflag=false;
+						this.loginbtnflag=false;
+						this.userflag=true;
+					}
+				}     );
+
+			},
+			showfood:function(  fid  ){
+				//alert("你想显示"+fid);
+				//这个fid对应的层显示，其它隐藏 (  food.status )
+				this.foods.forEach(   (item, index)=>{
+					item.status=   (fid==item.fid)
+				})
+			},
+			addCart:function(  fid, num   ){
+				if(   this.username==null|| this.username==""){
+					alert("请先登录")
+					return;
+				}
+			},
+			showLogin:function(  value  ){
+				this.loginflag=value;
+			}
+		},
+		//页面加载完后，调用这个mounted对应的函数
+		mounted:function(){
+			// lambda:
+			axios.all(   [getAllFood(),   checkLogin()] ).then(  axios.spread(    (d1,d2)=>{
+				d1.data.obj.forEach(   (item,index)=>{
+					item.status=false;  //增加一个属性给 food,且值为false
+				})
+				if( d2.data.code==1){
+					this.username=d2.data.obj.username;
+					this.loginbtnflag=false;
+					this.userflag=true;
+				}
+				this.foods=d1.data.obj;     //将服务器返回的json数组绑定到 vm中的一个属性 foods上
+			} ))
+		}
+	});
+
+	function checkLogin(){
+		return axios.get("checkLogin");
+	}
+
+	function getAllFood(){
+		return axios({
+			url:"findAllFoods",
+			method:"POST"
+		})
+	}
+</script>
+
+</body>
+</html>
